@@ -38,16 +38,18 @@ static void free_node(struct node *node)
 
 static fixed_point_t fixed_sqrt(fixed_point_t x)
 {
-    if (!x || x == (1U << FIXED_SCALE_BITS))
+    if (x <= 1)
         return x;
 
-    fixed_point_t s = 0U;
-    for (int i = (31 - __builtin_clz(x | 1)); i >= 0; i--) {
-        fixed_point_t t = (1U << i);
-        if ((((s + t) * (s + t)) >> FIXED_SCALE_BITS) <= x)
-            s += t;
+    int64_t k = (int64_t) x << FIXED_SCALE_BITS;
+    int64_t z = 0;
+    for (int64_t m = 1ULL << ((63 - __builtin_clzll(k)) & ~1ULL); m; m >>= 2) {
+        int64_t b = z + m;
+        z >>= 1;
+        if (k >= b)
+            k -= b, z += m;
     }
-    return s;
+    return (fixed_point_t) z;
 }
 
 static fixed_point_t fixed_log(fixed_point_t v)
