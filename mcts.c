@@ -54,35 +54,35 @@ static fixed_point_t fixed_sqrt(fixed_point_t x)
 
 static fixed_point_t fixed_log(fixed_point_t v)
 {
-    if (!v || v == (1U << FIXED_SCALE_BITS))
+    if (!v || v == 1)
         return 0;
 
-    fixed_point_t numerator = (v - (1U << FIXED_SCALE_BITS));
-    int neg = 0;
-    if (GET_SIGN(numerator)) {
-        neg = 1;
-        numerator = CLR_SIGN(numerator);
-        numerator = (1U << 31) - numerator;
-    }
+    fixed_point_t y = v;  // Q23_8
+    fixed_point_t L = 1L << ((31 - __builtin_clz(y))), R = L << 1;
+    fixed_point_t Llog = (31 - __builtin_clz(y) - FIXED_SCALE_BITS)
+                         << FIXED_SCALE_BITS,
+                  Rlog = Llog + (1 << FIXED_SCALE_BITS), log;
 
-    fixed_point_t y =
-        (numerator << FIXED_SCALE_BITS) / (v + (1U << FIXED_SCALE_BITS));
+    for (int i = 1; i < 20; i++) {
+        if (y == L)
+            return Llog;
+        else if (y == R)
+            return Rlog;
+        log = (Llog + Rlog) >> 1;
 
-    fixed_point_t ans = 0U;
-    for (unsigned i = 1; i < 20; i += 2) {
-        fixed_point_t z = (1U << FIXED_SCALE_BITS);
-        for (int j = 0; j < i; j++) {
-            z *= y;
-            z >>= FIXED_SCALE_BITS;
+        int64_t tmp = ((int64_t) L * (int64_t) R) >> FIXED_SCALE_BITS;
+        tmp = fixed_sqrt((fixed_point_t) tmp);
+
+        if (y >= tmp) {
+            L = tmp;
+            Llog = log;
+        } else {
+            R = tmp;
+            Rlog = log;
         }
-        z <<= FIXED_SCALE_BITS;
-        z /= (i << FIXED_SCALE_BITS);
-
-        ans += z;
     }
-    ans <<= 1;
-    ans = neg ? SET_SIGN(ans) : ans;
-    return ans;
+
+    return (fixed_point_t) log;
 }
 
 #define EXPLORATION_FACTOR fixed_sqrt(1U << (FIXED_SCALE_BITS + 1))
