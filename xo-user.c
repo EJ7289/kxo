@@ -113,7 +113,6 @@ int main(int argc, char *argv[])
 
     fd_set readset;
     int device_fd = open(XO_DEVICE_FILE, O_RDONLY);
-    printf("device_fd = %d\n", device_fd);
     if (device_fd < 0) {
         perror("Error");
         printf("Can't open device file: %s, error:%d\n", XO_DEVICE_FILE,
