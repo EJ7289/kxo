@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/select.h>
 #include <termios.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "game.h"
@@ -120,6 +121,27 @@ int draw_board(char *table, char *draw_buffer)
     return 0;
 }
 
+// display the current time
+
+void display_time(void)
+{
+    time_t current_time;
+    const struct tm *time_info;
+    char time_string[50];
+
+    // Get the current time in seconds since the Epoch
+    time(&current_time);
+
+    // Convert the time to local time
+    time_info = localtime(&current_time);
+
+    // Format the time into a string
+    strftime(time_string, sizeof(time_string), "%Y-%m-%d %H:%M:%S", time_info);
+
+    // Print the formatted time
+    printf("Current time: %s\n", time_string);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -167,6 +189,8 @@ int main(int argc, char *argv[])
             draw_board(table_buf, display_buf);
             display_buf[DRAWBUFFER_SIZE] = '\0';
             printf("%s", display_buf);
+
+            display_time();
         }
     }
 
