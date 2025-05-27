@@ -79,6 +79,7 @@ static struct class *kxo_class;
 static struct cdev kxo_cdev;
 
 static char draw_buffer[DRAWBUFFER_SIZE];
+static char table[N_GRIDS];
 
 /* Data are stored into a kfifo buffer before passing them to the userspace */
 static DECLARE_KFIFO_PTR(rx_fifo, unsigned char);
@@ -95,9 +96,9 @@ static DECLARE_WAIT_QUEUE_HEAD(rx_wait);
 /* Insert the whole chess board into the kfifo buffer */
 static void produce_board(void)
 {
-    unsigned int len = kfifo_in(&rx_fifo, draw_buffer, sizeof(draw_buffer));
-    if (unlikely(len < sizeof(draw_buffer)) && printk_ratelimit())
-        pr_warn("%s: %zu bytes dropped\n", __func__, sizeof(draw_buffer) - len);
+    unsigned int len = kfifo_in(&rx_fifo, table, sizeof(table));
+    if (unlikely(len < sizeof(table)) && printk_ratelimit())
+        pr_warn("%s: %zu bytes dropped\n", __func__, sizeof(table) - len);
 
     pr_debug("kxo: %s: in %u/%u bytes\n", __func__, len, kfifo_len(&rx_fifo));
 }
@@ -115,7 +116,6 @@ static DEFINE_MUTEX(consumer_lock);
  */
 static struct circ_buf fast_buf;
 
-static char table[N_GRIDS];
 
 /* Draw the board into draw_buffer */
 static int draw_board(char *table)
