@@ -34,11 +34,24 @@ static bool status_check(void)
     return true;
 }
 
+static void attr_fd_orig(void)
+{
+    int attr_fd = open(XO_DEVICE_ATTR_FILE, O_RDWR);
+    if (attr_fd < 0)
+        perror("Open attribute file error");
+    else {
+        char *buf = "1 1 0\n";
+        write(attr_fd, buf, 6);
+        // printf("final attr_fd = %s", buf);
+    }
+}
+
 static struct termios orig_termios;
 
 static void raw_mode_disable(void)
 {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+    attr_fd_orig();
 }
 
 static void raw_mode_enable(void)
