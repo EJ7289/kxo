@@ -55,6 +55,11 @@ static bool read_attr, end_attr;
 static void listen_keyboard_handler(void)
 {
     int attr_fd = open(XO_DEVICE_ATTR_FILE, O_RDWR);
+    if (attr_fd < 0) {
+        perror("Error");
+        printf("Can't open device attribute file: %s, error:%d\n",
+               XO_DEVICE_ATTR_FILE, attr_fd);
+    }
     char input;
 
     if (read(STDIN_FILENO, &input, 1) == 1) {
@@ -94,6 +99,14 @@ int main(int argc, char *argv[])
 
     fd_set readset;
     int device_fd = open(XO_DEVICE_FILE, O_RDONLY);
+    printf("device_fd = %d\n", device_fd);
+    if (device_fd < 0) {
+        perror("Error");
+        printf("Can't open device file: %s, error:%d\n", XO_DEVICE_FILE,
+               device_fd);
+        exit(1);
+    }
+
     int max_fd = device_fd > STDIN_FILENO ? device_fd : STDIN_FILENO;
     read_attr = true;
     end_attr = false;
