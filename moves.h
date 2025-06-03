@@ -1,0 +1,1 @@
+void record_move(char move, char win);
