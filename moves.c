@@ -69,3 +69,21 @@ void record_move(char move, char win)
     }
 }
 // ------------------------------------------------- //
+
+// ----------------- Display Moves ----------------- //
+void display_moves()
+{
+    char line[50];
+    FILE *fptr = fopen("file.txt", "r");
+    if (!fptr) {
+        perror("fopen error");
+        return;
+    }
+
+    while (fgets(line, 50, fptr) != NULL) {
+        printf("%s", line);
+    }
+
+    fclose(fptr);
+}
+// ------------------------------------------------- //

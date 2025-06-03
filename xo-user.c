@@ -95,7 +95,9 @@ static void listen_keyboard_handler(void)
             read_attr = false;
             end_attr = true;
             write(attr_fd, buf, 6);
-            printf("Stopping the kernel space tic-tac-toe game...\n");
+            printf("Stopping the kernel space tic-tac-toe game...\n\n");
+
+            display_moves();
             break;
         }
     }
