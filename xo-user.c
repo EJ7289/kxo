@@ -152,8 +152,12 @@ int main(int argc, char *argv[])
     int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
     fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
 
+    char table_move[N_GRIDS + 2];
     char table_buf[N_GRIDS];
     char display_buf[DRAWBUFFER_SIZE + 1];
+
+    char char_move;
+    char game_win;
 
     fd_set readset;
     int device_fd = open(XO_DEVICE_FILE, O_RDONLY);
@@ -184,8 +188,14 @@ int main(int argc, char *argv[])
             listen_keyboard_handler();
         } else if (read_attr && FD_ISSET(device_fd, &readset)) {
             FD_CLR(device_fd, &readset);
+
             printf("\033[H\033[J"); /* ASCII escape code to clear the screen */
-            read(device_fd, table_buf, N_GRIDS);
+            read(device_fd, table_move, N_GRIDS + 2);
+
+            memcpy(table_buf, table_move, N_GRIDS);
+            memcpy(&char_move, table_move + N_GRIDS, 1);
+            memcpy(&game_win, table_move + N_GRIDS + 1, 1);
+
             draw_board(table_buf, display_buf);
             display_buf[DRAWBUFFER_SIZE] = '\0';
             printf("%s", display_buf);
