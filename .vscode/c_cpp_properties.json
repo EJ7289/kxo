@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/lib/modules/6.11.0-26-generic/build",
+                "/usr/src/linux-headers-6.11.0-26-generic/include",
+                "/usr/src/linux-headers-6.11.0-26-generic/arch/x86/include",
+                "/usr/src/linux-hwe-6.11-headers-6.11.0-26/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "gnu99",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}
