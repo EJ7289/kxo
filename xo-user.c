@@ -156,6 +156,7 @@ int main(int argc, char *argv[])
     int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
     fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
 
+    remove("file.txt");
     char table_move[N_GRIDS + 2];
     char table_buf[N_GRIDS];
     char display_buf[DRAWBUFFER_SIZE + 1];
