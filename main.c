@@ -79,7 +79,10 @@ static struct class *kxo_class;
 static struct cdev kxo_cdev;
 
 static char draw_buffer[DRAWBUFFER_SIZE];
+static char table_move[N_GRIDS + 2];
 static char table[N_GRIDS];
+int global_move;
+char global_win;
 
 /* Data are stored into a kfifo buffer before passing them to the userspace */
 static DECLARE_KFIFO_PTR(rx_fifo, unsigned char);
@@ -96,9 +99,12 @@ static DECLARE_WAIT_QUEUE_HEAD(rx_wait);
 /* Insert the whole chess board into the kfifo buffer */
 static void produce_board(void)
 {
-    unsigned int len = kfifo_in(&rx_fifo, table, sizeof(table));
-    if (unlikely(len < sizeof(table)) && printk_ratelimit())
-        pr_warn("%s: %zu bytes dropped\n", __func__, sizeof(table) - len);
+    memcpy(table_move, table, N_GRIDS);
+    table_move[N_GRIDS] = (char) global_move;
+    table_move[N_GRIDS + 1] = global_win;
+    unsigned int len = kfifo_in(&rx_fifo, table_move, sizeof(table_move));
+    if (unlikely(len < sizeof(table_move)) && printk_ratelimit())
+        pr_warn("%s: %zu bytes dropped\n", __func__, sizeof(table_move) - len);
 
     pr_debug("kxo: %s: in %u/%u bytes\n", __func__, len, kfifo_len(&rx_fifo));
 }
@@ -220,6 +226,7 @@ static void ai_one_work_func(struct work_struct *w)
     tv_end = ktime_get();
 
     nsecs = (s64) ktime_to_ns(ktime_sub(tv_end, tv_start));
+    global_move = move;
     pr_info("kxo: [CPU#%d] doing %s for %llu usec\n", cpu, __func__,
             (unsigned long long) nsecs >> 10);
     put_cpu();
@@ -254,6 +261,7 @@ static void ai_two_work_func(struct work_struct *w)
     tv_end = ktime_get();
 
     nsecs = (s64) ktime_to_ns(ktime_sub(tv_end, tv_start));
+    global_move = move;
     pr_info("kxo: [CPU#%d] end doing %s for %llu usec\n", cpu, __func__,
             (unsigned long long) nsecs >> 10);
     put_cpu();
@@ -336,6 +344,7 @@ static void timer_handler(struct timer_list *__timer)
     tv_start = ktime_get();
 
     char win = check_win(table);
+    global_win = win;
 
     if (win == ' ') {
         ai_game();
